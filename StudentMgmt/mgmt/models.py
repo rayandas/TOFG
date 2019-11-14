@@ -7,21 +7,21 @@ class Faculty(models.Model):
     department = models.CharField(max_length=100)
     photo=models.FileField()
     def get_absolute_url(self):
-        return reverse('detail', kwargs={'username': self.user.username})
+        return reverse('detail', kwargs={'slug': self.user.username})
 
 class Staff(models.Model):
     user=models.OneToOneField(User,on_delete=models.CASCADE,null=True)
     department = models.CharField(max_length=100)
     photo=models.FileField()
     def get_absolute_url(self):
-        return reverse('detail', kwargs={'username': self.user.username})
+        return reverse('detail', kwargs={'slug': self.user.username})
 
 class Parent(models.Model):
     user=models.OneToOneField(User,on_delete=models.CASCADE,null=True)
     department = models.CharField(max_length=100)
     photo=models.FileField()
     def get_absolute_url(self):
-        return reverse('detail', kwargs={'username': self.user.username})
+        return reverse('detail', kwargs={'slug': self.user.username})
         
 
 # Create your models here.

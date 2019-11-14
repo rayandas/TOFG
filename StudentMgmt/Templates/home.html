@@ -1,0 +1,71 @@
+{% extends 'base_visitor.html' %}
+
+{% block extra_head %}
+<style>
+.carousel-inner > .item > img {
+    margin: 0 auto;
+}
+</style>
+{% endblock %}
+{% load staticfiles %}
+{% block body %}
+    <div class="container-fluid">
+
+        <div class="row">
+		                <div class="panel panel-default">
+                    
+                        <div class="panel-heading">
+							Welcome to <strong>Tale Of A Fourth Grade</strong>
+					</div>
+				</div>
+            <div id="myCarousel" class="carousel slide" data-ride="carousel" >
+
+  <ol class="carousel-indicators">
+    <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+    <li data-target="#myCarousel" data-slide-to="1"></li>
+    <li data-target="#myCarousel" data-slide-to="2"></li>
+    <li data-target="#myCarousel" data-slide-to="3"></li>
+  </ol>
+
+
+  <!-- Left and right controls -->
+  <a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
+    <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+    <span class="sr-only">Previous</span>
+  </a>
+  <a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">
+    <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+    <span class="sr-only">Next</span>
+  </a>
+</div>
+			
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+	                               About Us
+                            </div>
+                        <div class="panel-body">
+<p id=></p>Welcome to the Student Management System<br />
+                        </div>
+					</div>
+				
+				<div class="panel panel-info">
+	                        <div class="panel-heading">
+	                               
+                            </div>
+	                        <div class="panel-body">
+    <div class="well">"Digitalize paper works in Schools"</div>
+
+Have to write my content.
+                             </div>
+                </div>
+
+				
+
+                    
+
+     </div>
+
+
+    </div>
+
+ {% endblock %}
