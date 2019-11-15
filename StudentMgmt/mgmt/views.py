@@ -7,7 +7,6 @@ from django.shortcuts import render, get_object_or_404, redirect,render_to_respo
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, View
 from django.views.generic import DetailView, ListView
 from django.db.models import Q
-from .models import *
 from django.forms import DateField, SelectDateWidget
 from django.http import HttpResponse
 from django import forms
@@ -30,6 +29,37 @@ def homepage(request):
 
 def loginFirst(request):
     return redirect("login") 
+
+@login_required
+def Timesheet(request):
+    return render(request, 'login/timesheet.html',{'student':request.user.student})
+
+@login_required
+def PublicTimesheet(request,id):
+    return render(request, 'login/timesheet.html', {'student':Student.objects.get(id=id)})
+
+@login_required
+def requestverdict(request):
+    if request.POST.get('accept'):
+        result = 1
+    else:
+        result = 2
+    r=LeaveRequest.objects.get(id=request.POST.get('request_id'))
+    r.status=result
+    r.verdict=request.POST.get('reason')
+    r.save()
+    records=LeaveRecord.objects.get(faculty=r.faculty)
+    if r.type==1:
+        records.sick_leave-=1
+    elif r.type==2:
+        records.casual_leave-=1
+    elif r.type==2:
+        records.earned_leaves-=1
+    records.save()
+
+    return redirect("RequestList")
+
+@login_required
 
 
 
