@@ -10,8 +10,8 @@ from django.db.models import Q
 from django.forms import DateField, SelectDateWidget
 from django.http import HttpResponse
 from django import forms
-from .forms import FacultyForm, StaffForm, ParentForm, UserForm
-from .models import Faculty, Staff, Parent
+from .forms import FacultyForm, ParentForm, UserForm
+from .models import Faculty, Parent
 import datetime
 
 
@@ -30,6 +30,7 @@ def homepage(request):
 def loginFirst(request):
     return redirect("login") 
 
+'''
 @login_required
 def Timesheet(request):
     return render(request, 'login/timesheet.html',{'student':request.user.student})
@@ -58,17 +59,87 @@ def requestverdict(request):
     records.save()
 
     return redirect("RequestList")
+'''
+@login_required
+def fillAttendance(requst, subject):
+
+    if requst.POST.get('submit'):
+        dt=datetime.date(year=int(request.POST.get('date_year')),month=int(request.POST.get('date_month')),day=int(request.POST.get('date_day')))
+        for p in request.POST.keys():
+            if p[0:4]=='att_':
+                    selsub=SelectedSubject.objects.get(id=p[4:])
+                    pr= True if(request.POST.get('check_'+p[4:])) else False
+                    r=AttendanceRecord(selected_subject=selsub,present=pr,Date=dt)
+                    r.save()
+        return redirect("profile")
+    else:
+        sub=Subject.objects.get(subject_name=subject,faculty=request.user.faculty)
+        selsub=SelectedSubject.objects.filter(subject=sub)
+        return render(request,'login/fill_attendance.html',{'selected_subject':selsub,'subject':subject,'day':dates()})
 
 @login_required
+def viewAttendance(request,subject):
+    try:
+        sub=Subject.objects.get(subject_name=subject,faculty=request.user.faculty)
+    except:
+        return redirect("profile")
+    return render(request,'login/view_attendance.html',{'list':sub.studies.all(),'subject':subject})
 
 
+@login_required
+def newSelectedSubject(request,id):
+    sub=Subject.objects.get(id=id)
+    try:
+        SelectedSubject.objects.get_or_create(student=request.user.student,subject=sub)
+    except:
+        Subject.objects.get_or_create(faculty=request.user.faculty,subject_name=sub.subject_name)
+
+    return redirect("profile")
+
+@login_required
+def newSubject(request):
+    newsub=request.POST.get('name')
+    if newsub:
+        newsub=newsub.replace(' ','_')
+        newsub=newsub.replace(r"'",'')
+
+        Subject.objects.get_or_create(faculty=request.user.faculty,subject_name=newsub.lower())
 
 
+    return redirect("profile")
+
+@login_required
+def myprofile(request):
+
+    return render(request,'login/profile.html',{'user':request.user,'subjects':Subject.objects.all(),'day':datetime.date.today})
+
+def logout_view(request):
+    logout(request)
 
 
 class Detail(DetailView):
     model = User
     template_name = 'detail.html'
+    slug_field = 'username'
+
+class Info(DetailView):
+    model=User
+    template_name='detail.html'
+
+class StudentList(ListView):
+    template_name='list.html'
+    context_object_name = 'student'
+
+    def get_queryset(self):
+        return Student.objects.all()
+
+
+class FacultyList(ListView):
+    template_name='list.html'
+    context_object_name = 'student'
+
+    def get_queryset(self):
+        return Faculty.objects.all()
 
 class FacultyFormView(View):
     form_class = FacultyForm
@@ -85,22 +156,7 @@ class FacultyFormView(View):
             user.save()
             redirect("details",username = user.user.username)
         return render(request,self.template_name,{'form':form})
-
-class StaffFormView(View):
-    form_class=StaffForm
-    template_name='register.html'
-    def get(self,request,id):
-        form= self.form_class(None)
-        return render(request,self.template_name,{'form':form})
-    def post(self,request,id):
-        print("check")
-        form=self.form_class(request.POST)
-        if form.is_valid():
-            user=form.save(commit=False)
-            user.user=User.objects.get(pk=self.kwargs['id'])
-            user.save()
-            redirect("detail",username=user.user.username)
-        return render(request,self.template_name,{'form':form})        
+        
 
 class ParentFormView(View):
     form_class=ParentForm
@@ -140,4 +196,57 @@ class UserFormView(View):
         return render(request,self.template_name,{'form':form})
 
 
-# Create your views here.
+
+
+class SearchView(ListView):
+    template_name = 'userList.html'
+    model = User
+
+    def get_queryset(self):
+        try:
+            name = self.request.GET.get('q')
+        except:
+            name = ''
+        if (name != ''):
+
+            object_list = self.model.objects.filter(Q(first_name__icontains = name )|Q(username__icontains = name )).exclude(username='admin')
+        else:
+            object_list = self.model.objects.all().exclude(username='admin')
+        return object_list
+
+
+class FacultyUpdate(UpdateView):
+    model = Faculty
+    
+    fields = ['specialization','photo']
+    template_name = 'update_form.html'
+    success_url = reverse_lazy('profile')
+    def user_passes_test(self, request):
+        if request.user.is_authenticated():
+            self.object = self.get_object()
+            return self.object == request.user.faculty
+        return False
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.user_passes_test(request):
+            return redirect('profile')
+        return super(FacultyUpdate, self).dispatch(
+            request, *args, **kwargs)
+
+class UserUpdate(UpdateView):
+    model = User
+    slug_field = 'username'
+    fields = ['first_name','last_name','email']
+    template_name = 'update_form.html'
+    success_url = reverse_lazy('profile')
+    def user_passes_test(self, request):
+        if request.user.is_authenticated():
+            self.object = self.get_object()
+            return self.object == request.user
+        return False
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.user_passes_test(request):
+            return redirect('profile')
+        return super(UserUpdate, self).dispatch(
+            request, *args, **kwargs)
