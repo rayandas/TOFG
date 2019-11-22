@@ -27,4 +27,16 @@ class ParentForm(forms.ModelForm):
 
     class Meta:
         model = Parent
-        fields = ['photo','department']        
+        fields = ['photo','department']   
+
+class StudentForm(forms.ModelForm):
+
+    DOB = forms.DateField(widget=forms.SelectDateWidget(years=[i for i in range(1920,2010)]),input_formats=['%Y-%m-%d','%m/%d/%Y','%m/%d/%y','%d/%m/%y'])
+
+    class Meta:
+        model = Student
+        fields = ['photo','DOB','branch','year','tenth_marks','inter_marks','current_marks']
+
+
+
+

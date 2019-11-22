@@ -23,11 +23,33 @@ class Parent(models.Model):
     photo=models.FileField()
     def get_absolute_url(self):
         return reverse('detail', kwargs={'slug': self.user.username})
-        
+
+class Student(models.Model):
+    user=models.OneToOneField(User,on_delete=models.CASCADE,null=True)
+    photo=models.FileField(blank=True, null=True)
+    DOB=models.DateField()
+    tenth_marks=models.FloatField(default=0)
+    inter_marks=models.FloatField(default=0)
+    current_marks=models.FloatField(default=0)
+    branch = models.CharField(max_length=100,
+        choices=(('Computer Science & Engineering','Computer Science & Engineering'),('Electrical Engineering','Electrical Engineering'),('Civil Engineering','Civil Engineering'),('Others','Others')),
+        default='Computer Science & Engineering',
+        )
+
+    year = models.IntegerField(
+        choices=((1,'Ist Year'),(2,'IInd Year'),(3,'IIIrd Year'),(4,'IVth Year')),
+        default=1,
+        )
+    def get_absolute_url(self):
+        return reverse('detail', kwargs={'slug': self.user.username})
+
+class Subject(models.Model):
+    subject_name=models.CharField(max_length=100)
+    faculty=models.ForeignKey(to=Faculty, on_delete=models.CASCADE, related_name="teaches", null=True, blank=True)
 
 class SelectedSubject(models.Model):
-    subject=models.ForeignKey(to=Subject, related_name="studies", null=True, blank=True)
-    student=models.ForeignKey(to=Student, related_name="selected", null=True, blank=True)
+    subject=models.ForeignKey(to=Subject, on_delete=models.CASCADE, related_name="studies", null=True, blank=True)
+    student=models.ForeignKey(to=Student, on_delete=models.CASCADE, related_name="selected", null=True, blank=True)
 
     def percentage(self):
         p,a=self.present(),self.absent()
@@ -52,7 +74,7 @@ class SelectedSubject(models.Model):
     
 
 class AttendanceRecord(models.Model):
-    selected_subject=models.ForeignKey(to=SelectedSubject, related_name="attendance", null=True, blank=True)
+    selected_subject=models.ForeignKey(to=SelectedSubject,on_delete=models.CASCADE, related_name="attendance", null=True, blank=True)
     Date=models.DateField(null=True)
     present=models.BooleanField()
 
